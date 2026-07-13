@@ -1,0 +1,220 @@
+ ❌ test_case_1                                                                                                 │
+│  ├──   Input:              In causal self-attention, what range of inputs does the model have access to when    │
+│  │                         processing a specific item?                                                          │
+│  │     Actual Output:      In causal (or backward-looking) self-attention, when processing a specific item      │
+│  │                         in an input sequence, the model has access to all input elements up to and           │
+│  │                         including the current one, but it does not have access to information about any      │
+│  │                         inputs beyond the current one.                                                       │
+│  │                                                                                                              │
+│  │                         This detail can be found on **page 4** and **page 5** of the file                    │
+│  │                         **Transformers.pdf**.                                                                │
+│  │     Expected Output:    The model has access to all inputs up to and including the one under                 │
+│  │                         consideration, but no access to information about inputs beyond the current one.     │
+│  └── Metrics                                                                                                    │
+│       Status ┃ Metric               ┃ Score ┃ Threshold ┃ Reason                                                │
+│      ━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│        PASS  │ Faithfulness         │ 1.00  │ 0.70      │ The score is 1.00 because there are no contradi...    │
+│        PASS  │ Answer Relevancy     │ 1.00  │ 0.70      │ The score is 1.00 because the response directly...    │
+│        PASS  │ Contextual Precision │ 0.83  │ 0.70      │ The score is 0.83 because the top-ranked nodes ...    │
+│        FAIL  │ Contextual Recall    │ 0.50  │ 0.70      │ The score is 0.50 because the single sentence in      │
+│              │                      │       │           │ the expected output is directly supported by the      │
+│              │                      │       │           │ first node in the retrieval context, which            │
+│              │                      │       │           │ explicitly states the model's access to inputs up     │
+│              │                      │       │           │ to the current one only. However, since there is      │
+│              │                      │       │           │ only one sentence and no additional supporting        │
+│              │                      │       │           │ context, the recall is moderate rather than           │
+│              │                      │       │           │ complete.  
+
+
+ ❌ test_case_3                                                                                                 │
+│  ├──   Input:              What will Chapter 12 of the book introduce?                                          │
+│  │     Actual Output:      Chapter 12 covers the following topics based on the provided files:                  │
+│  │                                                                                                              │
+│  │                         *   **Prompting:** It introduces the use of prompting large language models to       │
+│  │                         perform NLP tasks by providing directions or instructions in natural language        │
+│  │                         (found in **Transformers.pdf**, page 2).                                             │
+│  │                         *   **Machine Translation:** It includes a discussion on task-specific               │
+│  │                         evaluations for machine translation (found in **LLM.pdf**, page 20).                 │
+│  │     Expected Output:    Chapter 12 will introduce prompting large language models to perform other NLP       │
+│  │                         tasks by giving directions or instructions in natural language to a transformer      │
+│  │                         pretrained on language modeling.                                                     │
+│  └── Metrics                                                                                                    │
+│       Status ┃ Metric               ┃ Score ┃ Threshold ┃ Reason                                                │
+│      ━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│        FAIL  │ Faithfulness         │ 0.50  │ 0.70      │ The score is 0.50 because the actual output           │
+│              │                      │       │           │ incorrectly claims that Chapter 12 discusses          │
+│              │                      │       │           │ task-specific evaluations for machine translation,    │
+│              │                      │       │           │ which the retrieval context does not support; it      │
+│              │                      │       │           │ only mentions prompting large language models and     │
+│              │                      │       │           │ general task-specific accuracy measures without       │
+│              │                      │       │           │ specifying Chapter 12 for machine translation.        │
+│        FAIL  │ Answer Relevancy     │ 0.50  │ 0.70      │ The score is 0.50 because the response includes       │
+│              │                      │       │           │ statements about a different document and page,       │
+│              │                      │       │           │ which are irrelevant to the question about Chapter    │
+│              │                      │       │           │ 12 of the book. However, it partially addresses the   │
+│              │                      │       │           │ input, justifying the moderate score.                 │
+│        PASS  │ Contextual Precision │ 1.00  │ 0.70      │ The score is 1.00 because the first node in ret...    │
+│        PASS  │ Contextual Recall    │ 1.00  │ 0.70      │ The score is 1.00 because sentence 1 in the exp... 
+
+                                                                                                                 │
+│  ❌ test_case_5                                                                                                 │
+│  ├──   Input:              Why do words that are semantically close have no relation in the TF-IDF vector       │
+│  │                         space?                                                                               │
+│  │     Actual Output:      Words that are semantically close have no relation in the TF-IDF vector space        │
+│  │                         because TF-IDF is based purely on the **occurrence frequency of terms** within a     │
+│  │                         document.                                                                            │
+│  │                                                                                                              │
+│  │                         Because this method relies on statistical word-count patterns rather than the        │
+│  │                         meaning or context of the words, it cannot account for semantic similarities. As     │
+│  │                         a result, words that might be conceptually related (such as "cat" and "dog") do      │
+│  │                         not share a meaningful proximity in the vector space when using this approach.       │
+│  │                                                                                                              │
+│  │                         You can find more information on this in **embeddings.pdf**, **page 5**.             │
+│  │     Expected Output:    Because TF-IDF is based on the occurrence frequency of terms in the document.        │
+│  └── Metrics                                                                                                    │
+│       Status ┃ Metric               ┃ Score ┃ Threshold ┃ Reason                                                │
+│      ━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│        PASS  │ Faithfulness         │ 1.00  │ 0.70      │ The score is 1.00 because there are no contradi...    │
+│        FAIL  │ Answer Relevancy     │ 0.67  │ 0.70      │ The score is 0.67 because the response partially      │
+│              │                      │       │           │ addresses the question but includes irrelevant        │
+│              │                      │       │           │ elements like restating the question and              │
+│              │                      │       │           │ referencing external documents, which do not          │
+│              │                      │       │           │ directly explain the TF-IDF vector space issue.  
+
+ ❌ test_case_14                                                                                                │
+│  ├──   Input:              How is the logit modified in temperature sampling before it is passed through the    │
+│  │                         softmax function?                                                                    │
+│  │     Actual Output:      In temperature sampling, the logit ($u$) is modified by dividing it by a             │
+│  │                         temperature parameter ($\tau$) before it is passed through the softmax function.     │
+│  │                                                                                                              │
+│  │                         Mathematically, instead of the standard calculation $y = \text{softmax}(u)$, the     │
+│  │                         probability vector $y$ is computed as:                                               │
+│  │                         **$y = \text{softmax}(u/\tau)$**                                                     │
+│  │                                                                                                              │
+│  │                         You can find more details about this process in the following locations:             │
+│  │                         *   **LLM.pdf**: Page 12 and 13                                                      │
+│  │                         *   **Transformers.pdf**: Page 24                                                    │
+│  │     Expected Output:    The logit is divided by a temperature parameter τ.                                   │
+│  └── Metrics                                                                                                    │
+│       Status ┃ Metric               ┃ Score ┃ Threshold ┃ Reason                                                │
+│      ━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│        PASS  │ Faithfulness         │ 1.00  │ 0.70      │ The score is 1.00 because there are no contradi...    │
+│        PASS  │ Answer Relevancy     │ 1.00  │ 0.70      │ The score is 1.00 because the response directly...    │
+│        PASS  │ Contextual Precision │ 0.92  │ 0.70      │ The score is 0.92 because the top three nodes i...    │
+│        FAIL  │ Contextual Recall    │ 0.50  │ 0.70      │ The score is 0.50 because the single sentence in      │
+│              │                      │       │           │ the expected output is directly supported by the      │
+│              │                      │       │           │ statement in node 1 of the retrieval context, which   │
+│              │                      │       │           │ explains dividing the logit by the temperature        │
+│              │                      │       │           │ parameter τ. However, since there is only one         │
+│              │                      │       │           │ sentence to evaluate, the overall recall is           │
+│              │                      │       │           │ moderate rather than perfect.                         │
+│                                                                                                                 │
+╰────────────────────────────────────────────────────
+
+│  ❌ test_case_15                                                                                                │
+│  ├──   Input:              What are the two learnable parameters introduced in the standard implementation      │
+│  │                         of layer normalization?                                                              │
+│  │     Actual Output:      In the standard implementation of layer normalization, the two learnable             │
+│  │                         parameters introduced are **$\gamma$ (gain)** and **$\beta$ (offset)**.              │
+│  │                                                                                                              │
+│  │                         You can find this information on **page 11** of the **Transformers.pdf** file.       │
+│  │     Expected Output:    The two learnable parameters are γ (gain) and β (offset).                            │
+│  └── Metrics                                                                                                    │
+│       Status ┃ Metric               ┃ Score ┃ Threshold ┃ Reason                                                │
+│      ━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│        PASS  │ Faithfulness         │ 1.00  │ 0.70      │ The score is 1.00 because there are no contradi...    │
+│        FAIL  │ Answer Relevancy     │ 0.67  │ 0.70      │ The score is 0.67 because the response correctly      │
+│              │                      │       │           │ identifies the two learnable parameters in layer      │
+│              │                      │       │           │ normalization but includes an irrelevant statement    │
+│              │                      │       │           │ about a source location, which does not address the   │
+│              │                      │       │           │ question directly.                                    │
+│        PASS  │ Contextual Precision │ 1.00  │ 0.70      │ The score is 1.00 because the first node in the...    │
+│        FAIL  │ Contextual Recall    │ 0.50  │ 0.70      │ The score is 0.50 because the first sentence in the   │
+│              │                      │       │           │ expected output is well supported by node 1 in the    │
+│              │                      │       │           │ retrieval context, which clearly mentions the two     │
+│              │                      │       │           │ learnable parameters γ and β representing gain and    │
+│              │                      │       │           │ offset. However, the expected output contains only    │
+│              │                      │       │           │ one sentence, while the original expected output      │
+│              │                      │       │           │ likely had more, leading to partial alignment and     │
+│              │                      │       │           │ thus a moderate score.   
+
+                                                                                                                │
+│  ❌ test_case_17                                                                                                │
+│  ├──   Input:              What is the task of information retrieval?                                           │
+│  │     Actual Output:      Information retrieval (IR) is the field and task of returning documents from a       │
+│  │                         collection to a user based on their specific information needs as expressed in a     │
+│  │                         query. The goal of an IR system (often called a search engine) is to choose the      │
+│  │                         most relevant documents from a set to satisfy those needs.                           │
+│  │                                                                                                              │
+│  │                         You can find more details about this in:                                             │
+│  │                         *   **File:** RAG.pdf                                                                │
+│  │                         *   **Page:** 3 (General definition and overview)                                    │
+│  │                         *   **Page:** 20 (Summary of the task)                                               │
+│  │     Expected Output:    The task of choosing the most relevant document from a document set given a          │
+│  │                         user’s query expressing their information need.                                      │
+│  └── Metrics                                                                                                    │
+│       Status ┃ Metric               ┃ Score ┃ Threshold ┃ Reason                                                │
+│      ━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│        PASS  │ Faithfulness         │ 1.00  │ 0.70      │ The score is 1.00 because there are no contradi...    │
+│        FAIL  │ Answer Relevancy     │ 0.40  │ 0.70      │ The score is 0.40 because the response includes       │
+│              │                      │       │           │ multiple references to external files and specific    │
+│              │                      │       │           │ pages that do not directly explain the task of        │
+│              │                      │       │           │ information retrieval, reducing its relevance.        │
+│              │                      │       │           │ However, it still partially addresses the topic,      │
+│              │                      │       │           │ which justifies the moderate score rather than a      │
+│              │                      │       │           │ lower one.  
+
+ ❌ test_case_18                                                                                                │
+│  ├──   Input:              What is the shape of the hidden layer in the word2vec network?                       │
+│  │     Actual Output:      The hidden layer in the word2vec network has a shape of **Vocabulary size x          │
+│  │                         Embedding size**.                                                                    │
+│  │                                                                                                              │
+│  │                         You can find this information in **embeddings.pdf** on **page 7** (also              │
+│  │                         referenced on page 8).                                                               │
+│  │     Expected Output:    The hidden layer has a shape of Vocabulary size x Embedding size.                    │
+│  └── Metrics                                                                                                    │
+│       Status ┃ Metric               ┃ Score ┃ Threshold ┃ Reason                                                │
+│      ━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│        FAIL  │ Faithfulness         │ 0.50  │ 0.70      │ The score is 0.50 because the actual output           │
+│              │                      │       │           │ ambiguously states that the hidden layer has a        │
+│              │                      │       │           │ shape of Vocabulary size x Embedding size, which is   │
+│              │                      │       │           │ true for the weight matrix but misleading since the   │
+│              │                      │       │           │ hidden layer's output for a single input is just      │
+│              │                      │       │           │ the embedding vector of size Embedding size,          │
+│              │                      │       │           │ causing partial contradiction.               
+
+  ❌ test_case_21                                                                                                │
+│  ├──   Input:              What is the role of the search engine in the retrieval-augmented generation          │
+│  │                         process?                                                                             │
+│  │     Actual Output:      In the retrieval-augmented generation (RAG) process, the search engine serves as     │
+│  │                         the tool used during the retrieval stage to process the user's query. Its role is    │
+│  │                         to search through a specified collection of documents to retrieve a set of           │
+│  │                         relevant passages or documents that contain information pertinent to the user's      │
+│  │                         request. These retrieved materials are then passed to the large language model to    │
+│  │                         serve as a factual base or "grounding" for the generation of the final answer.       │
+│  │                                                                                                              │
+│  │                         You can find more information regarding this process in the following locations:     │
+│  │                         * **File:** `RAG.pdf`, **Page:** 21 (mentions the user query being passed to the     │
+│  │                         search engine to retrieve relevant documents).                                       │
+│  │                         * **File:** `RAG.pdf`, **Pages:** 16–17 (details the use of information retrieval    │
+│  │                         techniques to retrieve passages from a document collection).                         │
+│  │                         * **File:** `VectorDatabases.pdf`, **Page:** 8 (describes how a vector database      │
+│  │                         uses an ANN index to retrieve relevant text chunks based on semantic similarity).    │
+│  │     Expected Output:    In the retrieval step, the search engine takes the user query and retrieves a set    │
+│  │                         of relevant documents or passages.                                                   │
+│  └── Metrics                                                                                                    │
+│       Status ┃ Metric               ┃ Score ┃ Threshold ┃ Reason                                                │
+│      ━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│        PASS  │ Faithfulness         │ 1.00  │ 0.70      │ The score is 1.00 because there are no contradi...    │
+│        PASS  │ Answer Relevancy     │ 1.00  │ 0.70      │ The score is 1.00 because the response directly...    │
+│        FAIL  │ Contextual Precision │ 0.67  │ 0.70      │ The score is 0.67 because the first node in           │
+│              │                      │       │           │ retrieval contexts clearly explains the search        │
+│              │                      │       │           │ engine's role by stating it retrieves relevant        │
+│              │                      │       │           │ documents based on the user query, which is highly    │
+│              │                      │       │           │ relevant. However, the second and third nodes,        │
+│              │                      │       │           │ ranked 2nd and 3rd, are irrelevant as they do not     │
+│              │                      │       │           │ specifically address the search engine's role,        │
+│              │                      │       │           │ lowering the score. The fourth and sixth nodes,       │
+│              │                      │       │           │ ranked 4th and 6th, are relevant and describe the     │
+│              │                      │       │           │ retrieval step effectively, supporting the current    │
+│              │                      │       │           │ score but their lower ranks prevent a higher score. 

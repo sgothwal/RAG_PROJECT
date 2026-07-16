@@ -41,7 +41,7 @@ A production-grade Retrieval-Augmented Generation (RAG) system built over founda
 │  Cohere Reranker (text chunks only, k=15→3)              │
 │      │                    │                              │
 │  Top 3 Text Chunks   Image Chunks (pass-through)         │
-│      └──────────────────┘                                │
+│      └──────────────────--┘                              │
 │                    │                                     │
 │             Gemini Flash                                 │
 │         (text + actual images)                           │
@@ -96,7 +96,30 @@ Evaluated using **DeepEval** with a 25-question golden dataset generated from th
 **Note on Answer Relevancy (0.85):** Scores are slightly lower due to the evaluation metric penalizing source citations (page numbers, file references) included in responses for traceability. Citations are an intentional feature of the pipeline — the evaluator limitation was identified and documented rather than removed to chase a higher score.
 
 ---
+## 📁 Project Structure
 
+```
+RAG_PROJECT/
+├── Backend/
+│   ├── extract_chunk.py    # PDF parsing, chunking
+│   ├── ingest.py           # embed + store in Qdrant
+│   └── pipeline.py         # retrieval, reranking, generation
+├── Eval_Script/
+│   └── evaluate.py         # DeepEval evaluation
+├── Frontend/
+│   └── app.py              # Streamlit
+├── json_files/
+│   ├── chunks.json         # processed chunks
+│   ├── eval_dataset.json   # 25 evaluation questions
+│   └── deepeval_results.json
+├── Papers/                 # source PDFs
+├── main.py                 # FastAPI
+├── docker-compose.yml
+├── requirements.txt
+└── README.md
+```
+
+---
 
 ## 🛠️ Tech Stack
 
@@ -176,57 +199,6 @@ The pipeline is split into two distinct processes:
 This is standard production RAG architecture — ingestion and serving never share a process.
 
 ---
-
-
-## ⚠️ Known Limitations
-
-**Image fragment rendering** — Unstructured sometimes splits composite figures spanning multiple PDF elements into separate image fragments. Full image reconstruction would require custom PDF rendering logic (e.g. page-level rasterization + figure boundary detection).
-
-**Formula extraction** — Mathematical formulas in PDFs are extracted as garbled unicode characters by Unstructured. Formula-heavy chunks have degraded embedding quality and retrieval accuracy. A dedicated math OCR pipeline (e.g. Mathpix) would be needed for accurate formula handling.
-
-**Text-based image retrieval** — Image retrieval is text-based (over LLM-generated summaries), not visual. True multimodal retrieval would require visual embeddings (e.g. CLIP) to search over image content directly. Current approach: Level 1 (vision-aware ingestion) + Level 3 (multimodal generation), missing Level 2 (visual retrieval).
-
-**Cross-encoder domain mismatch** — Standard cross-encoders trained on MS MARCO (web search) underperform on academic text. Cohere's hosted reranker mitigates this but introduces an external API dependency.
-
----
-
-## 🚀 Future Improvements
-
-- **Visual embeddings** — CLIP-based image embeddings for true multimodal retrieval, not just text-based image search
-- **GraphRAG** — Knowledge graph construction for multi-hop reasoning across papers (e.g. "how does attention in transformers relate to retrieval in RAG?")
-- **Job queue** — RQ/Celery + Redis for concurrent user handling at scale. Currently FastAPI handles requests synchronously, suitable for low traffic.
-- **HyDE** — Hypothetical Document Embedding for asymmetric queries where dense retrieval still struggles. Validated manually, skipped as retrieval quality was already sufficient.
-- **Math OCR** — Mathpix or similar for accurate formula extraction and embedding
-- **Multimodal reranker** — Cross-encoders that understand visual content for proper image chunk reranking
-- **CI/CD Evaluation** — automated DeepEval evaluation on every push via GitHub Actions, blocking merges if metrics drop below threshold (faithfulness < 0.85, contextual precision < 0.85). Requires Qdrant Cloud migration for GitHub Actions accessibility.
-
----
-
-## 📁 Project Structure
-
-```
-RAG_PROJECT/
-├── Backend/
-│   ├── extract_chunk.py    # PDF parsing, chunking
-│   ├── ingest.py           # embed + store in Qdrant
-│   └── pipeline.py         # retrieval, reranking, generation
-├── Eval_Script/
-│   └── evaluate.py         # DeepEval evaluation
-├── Frontend/
-│   └── app.py              # Streamlit
-├── json_files/
-│   ├── chunks.json         # processed chunks
-│   ├── eval_dataset.json   # 25 evaluation questions
-│   └── deepeval_results.json
-├── Papers/                 # source PDFs
-├── main.py                 # FastAPI
-├── docker-compose.yml
-├── requirements.txt
-└── README.md
-```
-
----
-
 ## 🔭 Observability
 
 All pipeline steps are traced via **LangSmith** with `@traceable` decorators:
@@ -271,4 +243,26 @@ LangSmith enables per-query debugging — when evaluation scores are low, traces
 RRF demotion was a real observed failure — hybrid search penalized semantically relevant chunks that sparse search didn't match, dragging their RRF score down. Cohere reranker resolved this by scoring query-chunk pairs directly rather than relying on rank fusion math.
 
 ---
+## ⚠️ Known Limitations
 
+**Image fragment rendering** — Unstructured sometimes splits composite figures spanning multiple PDF elements into separate image fragments. Full image reconstruction would require custom PDF rendering logic (e.g. page-level rasterization + figure boundary detection).
+
+**Formula extraction** — Mathematical formulas in PDFs are extracted as garbled unicode characters by Unstructured. Formula-heavy chunks have degraded embedding quality and retrieval accuracy. A dedicated math OCR pipeline (e.g. Mathpix) would be needed for accurate formula handling.
+
+**Text-based image retrieval** — Image retrieval is text-based (over LLM-generated summaries), not visual. True multimodal retrieval would require visual embeddings (e.g. CLIP) to search over image content directly. Current approach: Level 1 (vision-aware ingestion) + Level 3 (multimodal generation), missing Level 2 (visual retrieval).
+
+**Cross-encoder domain mismatch** — Standard cross-encoders trained on MS MARCO (web search) underperform on academic text. Cohere's hosted reranker mitigates this but introduces an external API dependency.
+
+---
+
+## 🚀 Future Improvements
+
+- **Visual embeddings** — CLIP-based image embeddings for true multimodal retrieval, not just text-based image search
+- **GraphRAG** — Knowledge graph construction for multi-hop reasoning across papers (e.g. "how does attention in transformers relate to retrieval in RAG?")
+- **Job queue** — RQ/Celery + Redis for concurrent user handling at scale. Currently FastAPI handles requests synchronously, suitable for low traffic.
+- **HyDE** — Hypothetical Document Embedding for asymmetric queries where dense retrieval still struggles. Validated manually, skipped as retrieval quality was already sufficient.
+- **Math OCR** — Mathpix or similar for accurate formula extraction and embedding
+- **Multimodal reranker** — Cross-encoders that understand visual content for proper image chunk reranking
+- **CI/CD Evaluation** — automated DeepEval evaluation on every push via GitHub Actions, blocking merges if metrics drop below threshold (faithfulness < 0.85, contextual precision < 0.85). Requires Qdrant Cloud migration for GitHub Actions accessibility.
+
+---

@@ -212,6 +212,9 @@ RAG Pipeline
 
 LangSmith enables per-query debugging — when evaluation scores are low, traces show exactly which retrieval or generation step caused the failure.
 
+<img width="1219" height="793" alt="Screenshot 2026-07-16 at 18 31 49" src="https://github.com/user-attachments/assets/b792cf84-b323-4977-8547-0e92084e7c25" />
+<img width="1219" height="793" alt="Screenshot 2026-07-16 at 18 30 26" src="https://github.com/user-attachments/assets/80bcbcbb-ba35-415f-a020-d4b0374344f7" />
+
 ---
 
 ## 📖 Corpus Statistics

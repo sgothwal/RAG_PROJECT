@@ -12,6 +12,11 @@ A production-grade Retrieval-Augmented Generation (RAG) system built over founda
 > - *"What are the components of an LLM-based agent?"*
 > - *"How does RAG differ from fine-tuning?"*
 
+
+<img width="368" height="611" alt="Screenshot 2026-07-16 at 19 38 53" src="https://github.com/user-attachments/assets/9886ce03-fe21-4733-bba2-292df37621b9" />
+<img width="694" height="793" alt="Screenshot 2026-07-16 at 19 30 28" src="https://github.com/user-attachments/assets/a3815545-7f98-4aed-9481-671c2209cbbf" />
+
+
 ---
 
 ## 🏗️ Architecture

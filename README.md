@@ -18,36 +18,36 @@ A production-grade Retrieval-Augmented Generation (RAG) system built over founda
 
 ```
                         OFFLINE (ingest.py)
-┌─────────────────────────────────────────────────────────┐
-│  PDF → Unstructured → Chunks + Images                   │
-│           │                    │                         │
-│     Text Chunks          Image Elements                  │
-│           │                    │                         │
-│     BGE Embeddings    Gemini Vision → Summary            │
-│     miniCOIL Sparse          │                           │
-│           │              BGE Embeddings                  │
-│           └──────────────────┘                           │
-│                    Qdrant (Docker)                        │
-└─────────────────────────────────────────────────────────┘
+----------------------------------------------------------------------------
+│  PDF → Unstructured → Chunks       +             Images                  │
+│                        │                          │                      │
+│                   Text Chunks                 Image Elements             │
+│                        │                          │                      │
+│                  BGE Embeddings           Gemini Vision → Summary        │
+│                 miniCOIL Sparse                   │                      │
+│                       │                   BGE Embeddings                 │
+│                       ----------------------------┘                      │
+│                            Qdrant (Docker)                               │
+└--------------------------------------------------------------------------┘
 
                         ONLINE (pipeline.py)
-┌─────────────────────────────────────────────────────────┐
-│  User Query                                             │
+┌───────────────────────────────────────────────────────── ┐
+│  User Query                                              │
 │      │                                                   │
-│  Hybrid Search (dense + sparse, k=20)                   │
+│  Hybrid Search (dense + sparse, k=15)                    │
 │      │                                                   │
-│  Score Threshold Filter                                  │
+│  Score Threshold Filter (>0.2)                           │
 │      │                                                   │
-│  Cohere Reranker (text chunks only)                      │
+│  Cohere Reranker (text chunks only, k=15→3)              │
 │      │                    │                              │
-│  Top 5 Text Chunks   Image Chunks (pass-through)         │
+│  Top 3 Text Chunks   Image Chunks (pass-through)         │
 │      └──────────────────┘                                │
 │                    │                                     │
 │             Gemini Flash                                 │
 │         (text + actual images)                           │
 │                    │                                     │
 │         Answer with Citations                            │
-└─────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────-┘
 ```
 
 ---
@@ -63,6 +63,40 @@ A production-grade Retrieval-Augmented Generation (RAG) system built over founda
 - **Evaluation** — DeepEval evaluation framework with 25-question golden dataset
 
 ---
+
+
+## ⚡ Performance
+
+Measured on Apple M2 8GB, Qdrant running locally via Docker (last 10 queries):
+
+| Stage | Avg | Min | Max |
+|---|---|---|---|
+| Hybrid Retrieval (k=15, score threshold >0.2) | 0.40s | 0.11s | 1.07s |
+| Cohere Reranking (k=15→3) | 0.49s | 0.37s | 0.88s |
+| Gemini Flash Generation | 1.63s | 1.41s | 2.03s |
+| **Total** | **~2.5s** | **~2s** | **~4s** |
+
+Retrieval variance (0.11s→1.07s) is due to Qdrant cold start on first query — subsequent queries are consistently fast. Generation is stable (1.41-2.03s) reflecting Gemini Flash's consistent response times.
+
+Latency traced via LangSmith `@traceable` decorators — actual measured wall clock time per pipeline step.
+
+----
+
+## 📊 Evaluation Results
+
+Evaluated using **DeepEval** with a 25-question golden dataset generated from the corpus. Questions were generated using Gemini with Pydantic structured output and a **context quality gate** — each chunk was assessed by the LLM for self-contained context before question generation, filtering out mid-sentence continuation chunks.
+
+| Metric | Score | Pass Rate |
+|---|---|---|
+| Faithfulness | 0.95 | 92% |
+| Answer Relevancy | 0.85 | 84% |
+| Contextual Precision | 0.92 | 96% |
+| Contextual Recall | 0.94 | 88% |
+
+**Note on Answer Relevancy (0.85):** Scores are slightly lower due to the evaluation metric penalizing source citations (page numbers, file references) included in responses for traceability. Citations are an intentional feature of the pipeline — the evaluator limitation was identified and documented rather than removed to chase a higher score.
+
+---
+
 
 ## 🛠️ Tech Stack
 
@@ -143,20 +177,6 @@ This is standard production RAG architecture — ingestion and serving never sha
 
 ---
 
-## 📊 Evaluation Results
-
-Evaluated using **DeepEval** with a 25-question golden dataset generated from the corpus. Questions were generated using Gemini with Pydantic structured output and a **context quality gate** — each chunk was assessed by the LLM for self-contained context before question generation, filtering out mid-sentence continuation chunks.
-
-| Metric | Score | Pass Rate |
-|---|---|---|
-| Faithfulness | 0.95 | 92% |
-| Answer Relevancy | 0.85 | 84% |
-| Contextual Precision | 0.92 | 96% |
-| Contextual Recall | 0.94 | 88% |
-
-**Note on Answer Relevancy (0.85):** Scores are slightly lower due to the evaluation metric penalizing source citations (page numbers, file references) included in responses for traceability. Citations are an intentional feature of the pipeline — the evaluator limitation was identified and documented rather than removed to chase a higher score.
-
----
 
 ## ⚠️ Known Limitations
 
@@ -178,67 +198,31 @@ Evaluated using **DeepEval** with a 25-question golden dataset generated from th
 - **HyDE** — Hypothetical Document Embedding for asymmetric queries where dense retrieval still struggles. Validated manually, skipped as retrieval quality was already sufficient.
 - **Math OCR** — Mathpix or similar for accurate formula extraction and embedding
 - **Multimodal reranker** — Cross-encoders that understand visual content for proper image chunk reranking
+- **CI/CD Evaluation** — automated DeepEval evaluation on every push via GitHub Actions, blocking merges if metrics drop below threshold (faithfulness < 0.85, contextual precision < 0.85). Requires Qdrant Cloud migration for GitHub Actions accessibility.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-project/
-├── ingest.py          # Offline: PDF parsing, chunking, embedding, indexing
-├── pipeline.py        # Online: retrieval, reranking, generation
-├── main.py            # FastAPI backend
-├── frontend/
-│   └── app.py         # Streamlit frontend
-├── evaluation/
-│   ├── generate_dataset.py   # QA dataset generation
-│   ├── evaluate.py           # DeepEval evaluation
-│   ├── ragas_dataset.json    # Generated test questions
-│   └── deepeval_results.csv  # Evaluation scores
+RAG_PROJECT/
+├── Backend/
+│   ├── extract_chunk.py    # PDF parsing, chunking
+│   ├── ingest.py           # embed + store in Qdrant
+│   └── pipeline.py         # retrieval, reranking, generation
+├── Eval_Script/
+│   └── evaluate.py         # DeepEval evaluation
+├── Frontend/
+│   └── app.py              # Streamlit
+├── json_files/
+│   ├── chunks.json         # processed chunks
+│   ├── eval_dataset.json   # 25 evaluation questions
+│   └── deepeval_results.json
+├── Papers/                 # source PDFs
+├── main.py                 # FastAPI
+├── docker-compose.yml
+├── requirements.txt
 └── README.md
-```
-
----
-
-## ⚙️ Setup
-
-### Prerequisites
-- Docker (for Qdrant)
-- Python 3.10+
-- API keys: Gemini, Cohere, LangSmith
-
-### 1. Start Qdrant
-```bash
-docker run -p 6333:6333 qdrant/qdrant
-```
-
-### 2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Set environment variables
-```bash
-GOOGLE_API_KEY=your_key
-COHERE_API_KEY=your_key
-LANGCHAIN_API_KEY=your_key
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_PROJECT=rag-pipeline
-```
-
-### 4. Run ingestion (once)
-```bash
-python ingest.py
-```
-
-### 5. Start backend
-```bash
-uvicorn main:app --reload
-```
-
-### 6. Start frontend
-```bash
-streamlit run frontend/app.py
 ```
 
 ---
@@ -258,11 +242,33 @@ LangSmith enables per-query debugging — when evaluation scores are low, traces
 
 ---
 
-## 📖 Papers Indexed
+## 📖 Corpus Statistics
 
-- Foundational LLMs
-- Retrieval-Augmented Generation (RAG)
-- Transformer Architecture
-- Embeddings and Vector Representations
-- AI Agents
-- Vector Databases
+| Stat | Value |
+|---|---|
+| Papers indexed | 6 |
+| Total pages | 149 |
+| Total chunks | 471 |
+| Image chunks | 81 |
+| Text chunks | 390 |
+| Chunk size | 1000 chars |
+| Chunk overlap | 150 chars |
+| Embedding dimensions | 768 (BGE-base) |
+
+
+---
+
+## 📈 Retrieval Benchmarks
+
+**Hybrid vs Dense only (observed during development):**
+
+| Approach | Rank of correct chunk (BM25 query) |
+|---|---|
+| Dense only | Rank 1-2 ✅ |
+| Hybrid k=15 (no reranker) | Rank 7-8 ❌ (RRF demotion) |
+| Hybrid k=15 + Cohere reranker (→3) | Rank 1-3 ✅ |
+
+RRF demotion was a real observed failure — hybrid search penalized semantically relevant chunks that sparse search didn't match, dragging their RRF score down. Cohere reranker resolved this by scoring query-chunk pairs directly rather than relying on rank fusion math.
+
+---
+

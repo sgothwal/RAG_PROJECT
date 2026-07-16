@@ -1,6 +1,6 @@
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
-from Backend.Main_pipeline import pipeline
+from Backend.pipeline import pipeline
 
 
 app = FastAPI(title="RAG_PROJECT")

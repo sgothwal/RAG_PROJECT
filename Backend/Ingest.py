@@ -28,7 +28,7 @@ def create_docu()-> list:
     docu_list=[]
     for element in data:
         extra_data={'img_url':element['img_url'],'eid':element['id']}
-        doc=Document(page_content=element['text'],
+        doc=Document(page_content=element['text'],  ##langchain documents creation
                 metadata=element['metadata']|extra_data
                 )
         docu_list.append(doc)
@@ -38,7 +38,7 @@ def create_docu()-> list:
     return(docu_list)
 def create_embeddings(documents)->object:
     
-        vector_store = QdrantVectorStore.from_existing_collection(
+        vector_store = client.create_collection(
             embedding=dense_embeddings,
             sparse_embedding=sparse_embeddings,
             url="http://localhost:6333",

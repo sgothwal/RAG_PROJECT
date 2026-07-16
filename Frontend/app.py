@@ -7,9 +7,19 @@ from PIL import Image
 import io
 
 
-st.title("📚 AI Research Assistant")
+st.title("🤖 PaperAI ")
 
-query = st.text_input("Ask a question")
+st.markdown("📄 [View source papers on GitHub](https://github.com/sgothwal/RAG_PROJECT/tree/main/Papers)")
+st.markdown("**Try asking:**")
+st.caption("• What is the BM25 weighting scheme?")
+st.caption("• How does the attention mechanism work in transformers?")
+st.caption("• In causal self-attention, what range of inputs does the model have access to when processing a specific item?")
+st.caption("• What is the trade-off associated with methods that give more weight to middle-probability words?")
+st.caption("• What is the role of embeddings in semantic search?")
+st.divider()
+
+
+query = st.text_input("Ask a question",placeholder='What is the BM25 weighting scheme?')
 
 if st.button("Search", type="primary") and query:
     with st.spinner("Searching..."):

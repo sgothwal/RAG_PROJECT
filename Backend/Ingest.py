@@ -8,11 +8,10 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 from pathlib import Path
 from langchain_huggingface import HuggingFaceEmbeddings
-
+import os
 load_dotenv()
 dense_embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5", model_kwargs={'device':'mps'})
 sparse_embeddings = FastEmbedSparse(model_name="Qdrant/minicoil-v1",kwargs={'device': 'mps'})
-client = QdrantClient(url="http://localhost:6333")
 collection_name="RAG_PROJECT"
 
 
@@ -38,15 +37,17 @@ def create_docu()-> list:
     return(docu_list)
 def create_embeddings(documents)->object:
     
-        vector_store = client.create_collection(
-            embedding=dense_embeddings,
-            sparse_embedding=sparse_embeddings,
-            url="http://localhost:6333",
-            collection_name=collection_name,
-            retrieval_mode=RetrievalMode.HYBRID
-            
-        )
-        print("!!!!Created vector store!!!!")
+    vector_store = QdrantVectorStore.from_documents(
+    documents=documents,
+    api_key=os.environ.get('QDRANT_API_KEY'),
+    url=os.environ.get('QDRANT_URL'),
+    embedding=dense_embeddings,
+    sparse_embedding=sparse_embeddings,
+    collection_name=collection_name,
+    retrieval_mode=RetrievalMode.HYBRID
+    
+)
+    print("!!!!Created vector store!!!!")
         
 if __name__== "__main__":
      docs=create_docu()

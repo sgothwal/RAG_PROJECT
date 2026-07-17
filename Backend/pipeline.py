@@ -10,7 +10,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from pydantic import BaseModel,Field
 from typing import List,Optional
 import cohere
-
+import os
 
 
 load_dotenv()
@@ -23,9 +23,10 @@ collection_name="RAG_PROJECT"
 vector_store = QdrantVectorStore.from_existing_collection(
             embedding=dense_embeddings,
             sparse_embedding=sparse_embeddings,
-            url="http://localhost:6333",
+            url=os.environ.get("QDRANT_URL"),
             collection_name=collection_name,
-            retrieval_mode=RetrievalMode.HYBRID
+            retrieval_mode=RetrievalMode.HYBRID,
+            api_key=os.environ.get("QDRANT_API_KEY")
             
         )
 

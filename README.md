@@ -132,7 +132,10 @@ RAG_PROJECT/
 |---|---|---|
 | PDF Parsing | Unstructured | Best-in-class PDF element extraction including images |
 | Dense Embeddings | BAAI/bge-base-en-v1.5 | Optimized for asymmetric retrieval (query→passage), 512 token limit |
-| Sparse Embeddings | Qdrant/minicoil-v1 | Learned sparse model, better than BM25 for technical terms |
+| Sparse Embeddings | Qdrant/minicoil-v1 | Qdrant/minicoil-v1 | sparse model, native Qdrant integration 
+                     with no RAM overhead unlike langchain's native BM25Retriever. 
+                     Enables single-call hybrid search with 
+                     built-in RRF fusion. Better at handling morphological variants of term |
 | Vector Store | Qdrant (Docker) | Native hybrid search + RRF fusion, no RAM overhead |
 | Reranker | Cohere rerank-english-v3.0 | Best-in-class reranking quality, domain-generalizable |
 | Generation | Gemini Flash | Multimodal, fast, cost-effective |

@@ -158,7 +158,7 @@ Images are handled via a **dual-chunk architecture**:
 ```
 Image extracted → sent to Gemini Vision with surrounding text
                 → generates context-aware summary
-                → stored as separate chunk linked to parent via source_id
+               
 
 Retrieval:  image summary chunk embedded → searchable via text queries
 Generation: actual image (base64) passed to Gemini → visually-grounded answer

@@ -190,7 +190,7 @@ A cross-encoder reranker was added to address **RRF demotion** — cases where a
 A similarity score threshold is applied **at retrieval time** (not downstream) — single place to tune, cleaner pipeline:
 
 ```python
-results = [r for r in results if r[1] > threshold]
+results = [r for r in results if r[1] > threshold] threshold=0.2
 ```
 
 Filtering at retrieval reduces noise passed to the reranker and improves reranking quality by ensuring only genuinely candidate chunks are scored.

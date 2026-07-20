@@ -39,8 +39,7 @@ def create_embeddings(documents)->object:
     
     vector_store = QdrantVectorStore.from_documents(
     documents=documents,
-    api_key=os.environ.get('QDRANT_API_KEY'),
-    url=os.environ.get('QDRANT_URL'),
+    url='http://localhost:6333',
     embedding=dense_embeddings,
     sparse_embedding=sparse_embeddings,
     collection_name=collection_name,

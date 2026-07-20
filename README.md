@@ -130,7 +130,7 @@ RAG_PROJECT/
 
 | Component | Tool | Why |
 |---|---|---|
-| PDF Parsing | Unstructured | Best-in-class PDF element extraction including images |
+| PDF Parsing and Chunking| Unstructured | Best-in-class PDF element extraction including images, provides chunking by title |
 | Dense Embeddings | BAAI/bge-base-en-v1.5 | Optimized for asymmetric retrieval (query→passage), 512 token limit |
 | Sparse Embeddings | Qdrant/minicoil-v1 | Learned sparse model with native Qdrant integration, no RAM overhead unlike BM25Retriever. Enables single-call hybrid search with built-in RRF fusion. Also better at handling morphological variants of terms |
 | Vector Store | Qdrant (Docker) | Native hybrid search + RRF fusion, no RAM overhead |
